@@ -1,0 +1,98 @@
+let TaskArray = [];
+
+
+
+if (localStorage.getItem("tasks")) {
+    TaskArray = JSON.parse(localStorage.getItem("tasks"));
+} else {
+    localStorage.setItem("tasks", JSON.stringify(TaskArray));
+}
+
+console.log(TaskArray);
+
+
+
+
+
+const list = document.querySelectorAll('.list');
+function activeLink() {
+    list.forEach((item) =>
+        item.classList.remove('active'));
+    this.classList.add('active');
+}
+list.forEach((item) => item.addEventListener('click', activeLink));
+
+
+const date = new Date()
+const year = date.getFullYear();
+const month = String(date.getMonth() + 1).padStart(2, '0');
+const day = String(date.getDate()).padStart(2, '0');
+const today = year + '-' + month + '-' + day;
+console.log(today)
+
+tasks = [{ name: "Complete React Tutorial", lastDate: "2026-07-04" }, { name: "Complete DBMS asignment", lastDate: "2026-07-04" }, { name: "Complete DBMS asignment", lastDate: "2026-07-05" },];
+tasks.sort((a, b) => new Date(a.lastDate) - new Date(b.lastDate));
+
+console.log(tasks);
+
+function todayTask(task, today) {
+    if (task.lastDate === today) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
+const todays_tasks = document.getElementById('todays_tasks');
+const upcoming_tasks = document.getElementById('upcoming_tasks');
+
+for (i = 0; i < TaskArray.length; i++) {
+    if (todayTask(TaskArray[i], today)) {
+        let newDiv = document.createElement('div');
+        newDiv.classList.add('task')
+        newDiv.innerHTML = `<h1>${TaskArray[i].name}</h2><span>Last Date : Today</span>`
+        todays_tasks.appendChild(newDiv);
+    }
+    else {
+        let newDiv = document.createElement('div');
+        newDiv.classList.add('task')
+        newDiv.innerHTML = `<h1>${TaskArray[i].name}</h2><span>Last Date : ${TaskArray[i].lastDate}</span>`
+        upcoming_tasks.appendChild(newDiv);
+    }
+}
+
+
+
+
+
+
+
+
+const overlay = document.getElementById("overlay");
+const closeOverlay = document.getElementById("closeOverlay");
+const addBtn = document.getElementById("addTask");
+const btns = document.querySelectorAll('.list');
+
+
+
+addBtn.addEventListener('click', e => {
+    overlay.classList.add('active');
+})
+closeOverlay.addEventListener('click', e => {
+    overlay.classList.remove('active');
+})
+
+
+
+const form = document.getElementById("addTaskForm");
+
+form.addEventListener('submit', e => {
+    e.preventDefault();
+    const data = new FormData(form);
+    const dict = Object.fromEntries(data.entries());
+    console.log(dict);
+    TaskArray.push(dict);
+    localStorage.setItem("tasks", JSON.stringify(TaskArray));
+    location.reload();
+});
