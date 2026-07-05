@@ -58,7 +58,7 @@
         <header>
             <nav>
                 <div id="greetings">
-                    <img id="greetings_img" src="athul.jpg" alt="" />
+                    <img id="greetings_img" src="" alt="" />
                     <div id="greetings_cont">
                         <span id="greetings_name">Hi Athul</span>
                         <span id="greeting">Good Morning</span>
@@ -92,10 +92,9 @@
                 <input type="text" id="taskName" name="name" placeholder="Enter task name" />
 
                 <label for="taskDate">Due Date</label>
-                <input type="date" id="taskDate" name="lastDate"/>
-
+                <input type="date" id="taskDate" name="lastDate" /
                 <label for="taskTime">Time</label>
-                <input type="time" id="taskTime" name="lastTime"/>
+                <input type="time" id="taskTime" name="lastTime" />
 
                 <label for="priority">Priority</label>
                 <select id="priority" name="priority">
@@ -113,6 +112,33 @@
         </div>
     </div>
 
+    <!-- Overlay -->
+    <div id="overlay1">
+        <div class="Login_cont">
+            <h2>Hi, Welcome to Task Flow</h2>
+            <form id="loginForm">
+                <label for="">Name</label>
+                <input type="text" id="username" placeholder="Enter your name" required>
+                <label for="">Profile Picture</label>
+                <input type="file" id="pfpUpload" accept="image/*">
+                <div style="width:100%;display: flex;flex-direction: column;align-items: center;">
+                    <p>Or choose an avatar:</p>
+                    <select id="avatarSelect" style="display:none;">
+                        <option value="assets/image/avatar1.png">Avatar 1</option>
+                        <option value="assets/image/avatar2.png">Avatar 2</option>
+                        <option value="assets/image/avatar3.png">Avatar 3</option>
+                    </select>
+                    <div class="avatar-options">
+                        <img src="assets/image/avatar1.png" alt="avatar1" data-value="assets/image/avatar1.png">
+                        <img src="assets/image/avatar2.png" alt="avatar2" data-value="assets/image/avatar2.png">
+                        <img src="assets/image/avatar3.png" alt="avatar3" data-value="assets/image/avatar3.png">
+                    </div>
+
+                    <button type="submit">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script type="module" src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.js"></script>

@@ -353,6 +353,115 @@ a {
     .form-container button#closeOverlay {
         background: #ccc;
     }
+    #overlay1 {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: linear-gradient(135deg, #1f5ba5, #003366) !important; /* gradient background */
+  display: none ;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  animation: fadeIn 0.4s ease; /* smooth fade */
+}
+
+#overlay1.active { display: flex; }
+#loginForm{
+    display:flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap:10px;
+}
+.Login_cont {
+  background: #ffffff44 !important;
+  padding: 30px 40px;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  text-align: center;
+  max-width: 420px;
+  width: 90%;
+  animation: slideUp 0.4s ease; /* smooth entry */
+}
+
+.Login_cont h2 {
+  margin-bottom: 20px;
+  color: #ffffff !important;
+  font-weight: 600;
+  font-size: 1.4rem;
+}
+
+.Login_cont input {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 10px;
+  border: 1.5px solid #ccc;
+  background-color: white;
+  transition: border 0.3s ease, box-shadow 0.3s ease;
+}
+
+.Login_cont input:focus {
+  border-color: #00629B;
+  box-shadow: 0 0 6px rgba(0,98,155,0.4);
+  outline: none;
+}
+
+.avatar-options {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 15px 0;
+}
+
+.avatar-options img {
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.avatar-options img:hover {
+  transform: scale(1.1);
+}
+
+.avatar-options img.selected {
+  border-color: #00629B;
+}
+
+.Login_cont button {
+    width: 100%;
+  padding: 12px 0px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-top: 15px;
+  font-weight: 500;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.Login_cont button[type="submit"] {
+  background: #00629B;
+  color: #fff;
+}
+
+.Login_cont button[type="submit"]:hover {
+  background: #004d73;
+  transform: translateY(-2px);
+}
+
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(40px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
 
 
 }
