@@ -1,6 +1,6 @@
 {
-  "short_name": "Tasks",
-  "name": "Task Manager",
+  "short_name": "TaskFlow",
+  "name": "TaskFlow",
   "icons": [
     {
       "src": "favicon.ico",
@@ -20,6 +20,7 @@
   ],
   "start_url": ".",
   "display": "standalone",
+  "orientation": "portrait",
   "theme_color": "#00629B",
   "background_color": "#DCEEFA"
 }
