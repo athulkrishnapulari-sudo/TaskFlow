@@ -79,6 +79,33 @@ for (i = 0; i < TaskArray.length; i++) {
 
 
 
+const overlay = document.getElementById("overlay");
+const closeOverlay = document.getElementById("closeOverlay");
+const addBtn = document.getElementById("addTask");
+const btns = document.querySelectorAll('.list');
+
+
+
+addBtn.addEventListener('click', e => {
+    overlay.classList.add('active');
+})
+closeOverlay.addEventListener('click', e => {
+    overlay.classList.remove('active');
+})
+
+
+
+const form = document.getElementById("addTaskForm");
+
+form.addEventListener('submit', e => {
+    e.preventDefault();
+    const data = new FormData(form);
+    const dict = Object.fromEntries(data.entries());
+    console.log(dict);
+    TaskArray.push(dict);
+    localStorage.setItem("tasks", JSON.stringify(TaskArray));
+    window.location.reload(); 
+});
 
 
 
