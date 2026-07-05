@@ -18,7 +18,7 @@ a {
 
 :root {
     --clr: #222327;
-    --background: rgb(216, 216, 216);
+    --background: #deebf5;
 }
 
 /* mobile first styling */
@@ -37,7 +37,7 @@ a {
         overflow: hidden;
     }
 
-    #green1 {
+    /* #green1 {
         width: 500px;
         height: 500px;
         position: absolute;
@@ -63,7 +63,7 @@ a {
         opacity: 0.4;
         right: -100px;
         bottom: 100px;
-    }
+    } */
 
     .navigation {
         position: absolute;
@@ -113,6 +113,7 @@ a {
 
     .navigation ul li.active a .icon {
         transform: translateY(-32px);
+        color:white;
     }
 
     .navigation ul li a .text {
@@ -135,7 +136,7 @@ a {
         top: -50%;
         width: 70px;
         height: 70px;
-        background: #1efa4a;
+        background: #00629B;
         border-radius: 50%;
         border: 6px solid var(--background);
         transition: 0.5s;
@@ -190,6 +191,7 @@ a {
         min-height: calc(100vh - 70px);
         padding: 0 20px;
         overflow: hidden;
+        background: linear-gradient(to bottom,#DCEEFA,#deebf5);
     }
 
     #greetings {
@@ -232,20 +234,22 @@ a {
     }
 
     #search_box input {
-        background-color: rgba(255, 255, 255, 0.774);
+        background-color: rgba(185, 219, 252, 0.445);
         width: 100%;
         padding: 10px 20px;
         border-radius: 10px;
         border: 1px solid rgba(207, 207, 207, 0.637);
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
         outline: none;
+        border: 1.5px solid #0A2F5C;
+
     }
 
     #search_box input:focus,
     #search_box input:active {
-        border: 1px solid #00C853;
+        border: 2px solid #0A2F5C;
         /* vibrant green accent */
-        box-shadow: 0 0 2px #0a4924, 0 0.5px 6px rgba(0, 0, 0, 0.25);
+        box-shadow: 0 0 2px #0A2F5C, 0 0.5px 6px rgba(0, 0, 0, 0.25);
         outline: none;
         transition: all 0.3s ease;
 
@@ -263,7 +267,7 @@ a {
         border: 1px solid rgb(180, 178, 178);
         padding: 12px 16px;
         border-radius: 12px;
-        background-color: rgba(255, 255, 255, 0.61);
+        background-color: #F2F7FC;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
         margin-bottom: 12px;
         transition: all 0.3s ease;
@@ -273,13 +277,13 @@ a {
     .task:hover {
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
         transform: translateY(-2px);
-        background-color: rgba(255, 255, 255, 0.95);
+        background-color: #F2F7FC;
     }
 
     .task h1 {
         font-size: 16px;
         margin: 0 0 4px 0;
-        color: #0a4924;
+        color: #0A2F5C;
     }
 
     .task span {
@@ -341,7 +345,7 @@ a {
     }
 
     .form-container button[type="submit"] {
-        background: #00c853;
+        background: #00629B;
         color: #fff;
     }
 

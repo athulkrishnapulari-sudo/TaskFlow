@@ -94,5 +94,5 @@ form.addEventListener('submit', e => {
     console.log(dict);
     TaskArray.push(dict);
     localStorage.setItem("tasks", JSON.stringify(TaskArray));
-    location.reload();
+    window.location.reload(); 
 });
