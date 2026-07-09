@@ -47,8 +47,10 @@ function updateProgress(completed, total) {
   let percentage = total > 0 ? (completed / total) * 100 : 0;
   if (percentage > 100) percentage = 100;
   progress.style.width = percentage + '%';
+  progress.style.transition = 'all 0.5s ease-in-out';
   progressText.textContent = Math.round(percentage) + '%';
 }
+const progress = document.getElementById('progress_width');
 
 function homepage() {
   const validTasks = TaskArray.filter(task => task);
@@ -115,11 +117,11 @@ function renderTasks(targetTodays = todays_tasks, targetUpcoming = upcoming_task
         localStorage.setItem('tasks', JSON.stringify(TaskArray));
         renderTasks(targetTodays, targetUpcoming);
         deletepopup.classList.remove('active');
+        homepage();
       }
       noBtn.onclick = () => {
         deletepopup.classList.remove('active');
       }
-      homepage()
     });
 
     // markDone handler
@@ -135,11 +137,13 @@ function renderTasks(targetTodays = todays_tasks, targetUpcoming = upcoming_task
         localStorage.setItem('tasks', JSON.stringify(TaskArray));
         renderTasks(targetTodays, targetUpcoming);
         markDonePopup.classList.remove('active');
+        homepage();
       }
+
       cancelBtn.onclick = () => {
         markDonePopup.classList.remove('active');
       }
-      homepage()
+      
     })
 
     if (todayTask(task)) targetTodays.appendChild(card);
@@ -239,6 +243,7 @@ if (loginForm) {
       reader.onload = ev => saveProfile(name, ev.target.result);
       reader.readAsDataURL(fileInput.files[0]);
     } else saveProfile(name, pfp);
+    homepage();
   });
 }
 
@@ -247,6 +252,7 @@ function saveProfile(name, pfp) {
   if (pfp) localStorage.setItem('taskflow_pfp', pfp);
   if (overlay1) overlay1.classList.remove('active');
   displayProfile();
+  homepage();
 }
 
 function displayProfile() {
@@ -261,7 +267,8 @@ window.addEventListener('load', () => {
   displayProfile();
   if (listButtons[0]) setActiveNav(listButtons[0]);
   switchPage();
-  
+  homepage();
+  progress.style.transition = 'all 0.5s ease-in-out';
 });
 
 function TasksSearched(value) {
