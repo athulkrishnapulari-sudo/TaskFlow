@@ -20,10 +20,10 @@ const greetings_name = document.getElementById('greetings_name');
 const overlay1 = document.getElementById('overlay1');
 const loginForm = document.getElementById('loginForm');
 const avatarSelect = document.getElementById('avatarSelect');
-const tasksPage=document.getElementById('tasks_page');
-const homePage=document.getElementById('home_page');
-const settingsPage=document.getElementById('settings_page');
-const profilePage=document.getElementById('profile_page');
+const tasksPage = document.getElementById('tasks_page');
+const homePage = document.getElementById('home_page');
+const settingsPage = document.getElementById('settings_page');
+const profilePage = document.getElementById('profile_page');
 
 // time & greeting
 const now = new Date();
@@ -42,14 +42,25 @@ if (greeting) {
 function todayTask(task) {
   return task && task.lastDate === today;
 }
-
 function renderTasks(targetTodays = todays_tasks, targetUpcoming = upcoming_tasks) {
   if (!targetTodays || !targetUpcoming) return;
-  for (let i = 0; i < TaskArray.length; i++) {
-    const task = TaskArray[i];
+
+  // Clear old tasks before re-rendering
+  targetTodays.innerHTML = '';
+  targetUpcoming.innerHTML = '';
+  targetTodays.innerHTML = '<h6>Today</h6>';
+  targetUpcoming.innerHTML = '<h6>Upcoming</h6>';
+
+  // Reload TaskArray from localStorage to stay in sync
+  TaskArray = JSON.parse(localStorage.getItem('tasks')) || [];
+
+  TaskArray.forEach((task, i) => {
+    if (!task) return; // skip deleted/null tasks
+
     const card = document.createElement('div');
     card.className = 'task ' + (task.priority || '');
     const dateLabel = todayTask(task) ? 'Today' : (task.lastDate || '');
+
     card.innerHTML = `
       <div class="task-row">
         <span class="task-title">${task.name || ''}</span>
@@ -58,11 +69,30 @@ function renderTasks(targetTodays = todays_tasks, targetUpcoming = upcoming_task
       <div class="task-row">
         <span class="task-date">${dateLabel}</span>
         <span class="task-time">${task.lastTime || ''}</span>
+        <button class="delete-task" data-index="${i}">Delete</button>
       </div>
     `;
+
+    // Delete handler
+    card.querySelector('.delete-task').addEventListener('click', () => {
+      const deletepopup = document.getElementById('overlay3');
+      deletepopup.classList.add('active');
+      const yesBtn = document.getElementById('confirmDelete');
+      const noBtn = document.getElementById('cancelDelete');
+      yesBtn.onclick = () => {
+        TaskArray.splice(i, 1);
+        localStorage.setItem('tasks', JSON.stringify(TaskArray));
+        renderTasks(targetTodays, targetUpcoming);
+        deletepopup.classList.remove('active');
+      }
+      noBtn.onclick = () => {
+        deletepopup.classList.remove('active');
+      }
+    });
+
     if (todayTask(task)) targetTodays.appendChild(card);
     else targetUpcoming.appendChild(card);
-  }
+  });
 }
 
 function setActiveNav(li) {
@@ -88,7 +118,7 @@ function switchPage() {
   else if (idx === 4) {
     tasksDisplay.innerHTML = profilePage.innerHTML;
   }
-  
+
 
 }
 function activeLink(e) {
@@ -187,14 +217,36 @@ function TasksSearched(value) {
 if (search_input) {
   search_input.addEventListener('input', e => {
     const q = e.target.value.trim();
-    if (q === '') { renderTasks(); return; }
+    
+    // If search is empty, restore normal view
+    if (q === '') { 
+      // Switch to Tasks page and render normally
+      setActiveNav(listButtons[1]);
+      switchPage();
+      return; 
+    }
+    
+    // Get search results
     const results = TasksSearched(q);
-    if (todays_tasks) todays_tasks.innerHTML = '';
-    if (upcoming_tasks) upcoming_tasks.innerHTML = '';
+    
+    // Switch to Tasks page to display results
+    setActiveNav(listButtons[1]);
+    switchPage();
+    
+    // Get the target containers after switchPage
+    const todays_container = document.getElementById('todays_tasks');
+    const upcoming_container = document.getElementById('upcoming_tasks');
+    
+    if (todays_container) todays_container.innerHTML = '';
+    if (upcoming_container) upcoming_container.innerHTML = '';
+    
+    // Show no results message
     if (results.length === 0) {
-      if (tasksDisplay) tasksDisplay.innerHTML = `<p class="no-results">No tasks found</p>`;
+      if (tasksDisplay) tasksDisplay.innerHTML = `<p class="no-results">No tasks found for "${q}"</p>`;
       return;
     }
+    
+    // Display search results
     for (let i = 0; i < results.length; i++) {
       const task = results[i];
       const newDiv = document.createElement('div');
@@ -208,10 +260,32 @@ if (search_input) {
         <div class="task-row">
           <span class="task-date">${dateLabel}</span>
           <span class="task-time">${task.lastTime || ''}</span>
+          <button class="delete-task" data-index="${TaskArray.indexOf(task)}">Delete</button>
         </div>
       `;
-      if (todayTask(task) && todays_tasks) todays_tasks.appendChild(newDiv);
-      else if (upcoming_tasks) upcoming_tasks.appendChild(newDiv);
+      if (todayTask(task) && todays_container) todays_container.appendChild(newDiv);
+      else if (upcoming_container) upcoming_container.appendChild(newDiv);
     }
+  });
+}
+
+// Clear search button
+const searchClearBtn = document.getElementById('search_clear');
+if (search_input && searchClearBtn) {
+  // Show/hide clear button based on input value
+  search_input.addEventListener('input', () => {
+    if (search_input.value.trim()) {
+      searchClearBtn.classList.add('visible');
+    } else {
+      searchClearBtn.classList.remove('visible');
+    }
+  });
+
+  // Clear search on button click
+  searchClearBtn.addEventListener('click', () => {
+    search_input.value = '';
+    searchClearBtn.classList.remove('visible');
+    // Trigger input event to update display
+    search_input.dispatchEvent(new Event('input', { bubbles: true }));
   });
 }
