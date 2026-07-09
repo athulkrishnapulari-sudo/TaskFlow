@@ -39,6 +39,34 @@ if (greeting) {
   else greeting.textContent = 'Good Evening';
 }
 
+
+function updateProgress(completed, total) {
+  const progress = document.getElementById('progress_width');
+  const progressText = document.getElementById('progress_percent');
+  if (!progress) return;
+  let percentage = total > 0 ? (completed / total) * 100 : 0;
+  if (percentage > 100) percentage = 100;
+  progress.style.width = percentage + '%';
+  progressText.textContent = Math.round(percentage) + '%';
+}
+
+function homepage() {
+  const validTasks = TaskArray.filter(task => task);
+  const completedTasks = validTasks.filter(task => task.Done === true).length;
+  const totalTasks = validTasks.length;
+  updateProgress(completedTasks, totalTasks);
+  
+  const todayDate = new Date().toISOString().split('T')[0];
+  const todayTasks = validTasks.filter(task => task.lastDate === todayDate);
+  const todayCountEl = document.getElementById('today_count');
+  if (todayCountEl) todayCountEl.textContent = todayTasks.length;
+  
+  const upcomingTasks = validTasks.filter(task => new Date(task.lastDate) > new Date());
+  const upcomingCountEl = document.getElementById('upcoming_count');
+  if (upcomingCountEl) upcomingCountEl.textContent = upcomingTasks.length;
+}
+
+
 function todayTask(task) {
   return task && task.lastDate === today;
 }
@@ -91,6 +119,7 @@ function renderTasks(targetTodays = todays_tasks, targetUpcoming = upcoming_task
       noBtn.onclick = () => {
         deletepopup.classList.remove('active');
       }
+      homepage()
     });
 
     // markDone handler
@@ -110,6 +139,7 @@ function renderTasks(targetTodays = todays_tasks, targetUpcoming = upcoming_task
       cancelBtn.onclick = () => {
         markDonePopup.classList.remove('active');
       }
+      homepage()
     })
 
     if (todayTask(task)) targetTodays.appendChild(card);
@@ -127,6 +157,9 @@ function switchPage() {
   const idx = Array.from(listButtons).indexOf(active);
   if (idx === 0) {
     tasksDisplay.innerHTML = homePage.innerHTML;
+    const todays_tasks = document.getElementById('todays_tasks');
+    const upcoming_tasks = document.getElementById('upcoming_tasks');
+    renderTasks(todays_tasks, upcoming_tasks);
   }
   else if (idx === 1) {
     tasksDisplay.innerHTML = tasksPage.innerHTML;
@@ -140,6 +173,7 @@ function switchPage() {
   else if (idx === 4) {
     tasksDisplay.innerHTML = profilePage.innerHTML;
   }
+  homepage()
 
 
 }
@@ -220,12 +254,14 @@ function displayProfile() {
   const p = localStorage.getItem('taskflow_pfp');
   if (n && greetings_name) greetings_name.textContent = `Hi ${n}`;
   if (p && greetings_img) greetings_img.src = p;
+  homepage();
 }
 
 window.addEventListener('load', () => {
   displayProfile();
   if (listButtons[0]) setActiveNav(listButtons[0]);
   switchPage();
+  
 });
 
 function TasksSearched(value) {
