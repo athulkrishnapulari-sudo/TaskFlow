@@ -60,16 +60,19 @@ function renderTasks(targetTodays = todays_tasks, targetUpcoming = upcoming_task
     const card = document.createElement('div');
     card.className = 'task ' + (task.priority || '');
     const dateLabel = todayTask(task) ? 'Today' : (task.lastDate || '');
-
+    if (task.Done) card.classList.add('done');
     card.innerHTML = `
-      <div class="task-row">
+      <div class="task-row1">
         <span class="task-title">${task.name || ''}</span>
         <span class="task-priority">${task.priority || ''}</span>
       </div>
-      <div class="task-row">
+      <div class="task-row2">
         <span class="task-date">${dateLabel}</span>
         <span class="task-time">${task.lastTime || ''}</span>
-        <button class="delete-task" data-index="${i}">Delete</button>
+        <div>
+          <button class="mark-done" data-index="${i}">Mark Done</button>
+          <button class="delete-task" data-index="${i}">Delete</button>
+        </div>
       </div>
     `;
 
@@ -89,6 +92,25 @@ function renderTasks(targetTodays = todays_tasks, targetUpcoming = upcoming_task
         deletepopup.classList.remove('active');
       }
     });
+
+    // markDone handler
+    const markDoneBtn = card.querySelector('.mark-done');
+    markDoneBtn.addEventListener('click', () => {
+      const markDonePopup = document.getElementById('overlay4');
+      markDonePopup.classList.add('active');
+
+      const confirmBtn = document.getElementById('confirmMarkDone');
+      const cancelBtn = document.getElementById('cancelMarkDone');
+      confirmBtn.onclick = () => {
+        TaskArray[i].Done = true;
+        localStorage.setItem('tasks', JSON.stringify(TaskArray));
+        renderTasks(targetTodays, targetUpcoming);
+        markDonePopup.classList.remove('active');
+      }
+      cancelBtn.onclick = () => {
+        markDonePopup.classList.remove('active');
+      }
+    })
 
     if (todayTask(task)) targetTodays.appendChild(card);
     else targetUpcoming.appendChild(card);
@@ -149,6 +171,8 @@ if (form) {
     e.preventDefault();
     const data = new FormData(form);
     const dict = Object.fromEntries(data.entries());
+    dict.Done=false;
+    console.log(dict);
     TaskArray.push(dict);
     localStorage.setItem('tasks', JSON.stringify(TaskArray));
     overlay.classList.remove('active');
@@ -289,3 +313,9 @@ if (search_input && searchClearBtn) {
     search_input.dispatchEvent(new Event('input', { bubbles: true }));
   });
 }
+
+
+
+
+
+console.log(TaskArray);
