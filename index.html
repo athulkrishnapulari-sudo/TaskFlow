@@ -20,13 +20,13 @@
     <div id="green2"></div>
     <div class="navigation">
         <ul>
-            <li class="list active">
+            <li class="list home active">
                 <a href="#">
                     <span class="icon"><ion-icon name="home-outline"></ion-icon></span>
                     <span class="text">Home</span>
                 </a>
             </li>
-            <li class="list">
+            <li class="list tasks">
                 <a href="#">
                     <span class="icon"><ion-icon name="list-outline"></ion-icon></span>
                     <span class="text">Tasks</span>
@@ -38,21 +38,24 @@
                     <span class="text">Add</span>
                 </a>
             </li>
-            <li class="list">
+            <li class="list settings">
                 <a href="#">
                     <span class="icon"><ion-icon name="settings-outline"></ion-icon></span>
                     <span class="text">Settings</span>
                 </a>
             </li>
-            <li class="list">
+            <li class="list profile">
                 <a href="#">
                     <span class="icon"><ion-icon name="person-outline"></ion-icon></span>
                     <span class="text">Profile</span>
                 </a>
             </li>
             <div class="indicator"></div>
+            
         </ul>
+        <div class="indicator2"></div>
     </div>
+    
 
     <main>
         <header>
@@ -72,13 +75,8 @@
                 </div>
             </nav>
         </header>
-        <div id="tasks_display">
-        <div id="todays_tasks">
-            <h5>Today's Tasks</h5>
-        </div>
-        <div id="upcoming_tasks">
-            <h5>Upcoming Tasks</h5>
-        </div>
+        <div id="main_display">
+            
         </div>
     </main>
 
@@ -94,7 +92,7 @@
                 <input type="text" id="taskName" name="name" placeholder="Enter task name" />
 
                 <label for="taskDate">Due Date</label>
-                <input type="date" id="taskDate" name="lastDate" /
+                <input type="date" id="taskDate" name="lastDate" />
                 <label for="taskTime">Time</label>
                 <input type="time" id="taskTime" name="lastTime" />
 
@@ -141,7 +139,23 @@
             </form>
         </div>
     </div>
-
+    <div id="tasks_page" style="display: none;">
+            <div id="todays_tasks">
+                <h5>Today's Tasks</h5>
+            </div>
+            <div id="upcoming_tasks">
+                <h5>Upcoming Tasks</h5>
+            </div>
+    </div>
+    <div id="home_page" style="display: none;">
+                <h5>Home Page</h5>
+    </div>
+    <div id="settings_page" style="display: none;">
+                <h5>Settings Page</h5>
+    </div>
+    <div id="profile_page" style="display: none;">
+                <h5>Profile Page</h5>
+    </div>
     <script type="module" src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.js"></script>
 </body>

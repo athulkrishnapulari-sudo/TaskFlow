@@ -34,7 +34,6 @@ a {
         background: rgb(216, 216, 216);
         overflow-x: hidden;
         overflow-y: auto;
-        padding-bottom: calc(90px + env(safe-area-inset-bottom));
     }
 
     /* #green1 {
@@ -70,8 +69,7 @@ a {
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 70px;
-    padding-bottom: env(safe-area-inset-bottom);
+    max-height: 70px;
     background: #fff;
     display: flex;
     justify-content: center;
@@ -90,6 +88,7 @@ a {
         width: 70px;
         height: 70px;
         z-index: 1;
+        z-index: 1000;
     }
 
     .navigation ul li a {
@@ -101,6 +100,7 @@ a {
         width: 100%;
         text-align: center;
         font-weight: 500;
+        z-index: 1000;
     }
 
     .navigation ul li a .icon {
@@ -111,11 +111,13 @@ a {
         text-align: center;
         transition: 0.5s;
         color: var(--clr);
+        z-index: 1000;
     }
 
     .navigation ul li.active a .icon {
         transform: translateY(-32px);
         color:white;
+        z-index: 1000;
     }
 
     .navigation ul li a .text {
@@ -142,8 +144,19 @@ a {
         border-radius: 50%;
         border: 6px solid var(--background);
         transition: 0.5s;
+        z-index: 999;
     }
-
+    .indicator2{
+        position: absolute;
+        width:100%;
+        height: 10px;
+        background: var(--background);
+        top: -10px;
+    }
+    .indicator::before,
+.indicator::after {
+    box-shadow: none; 
+}
     .indicator::before {
         content: '';
         position: absolute;
