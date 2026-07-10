@@ -151,6 +151,69 @@ function renderTasks(targetTodays = todays_tasks, targetUpcoming = upcoming_task
   });
 }
 
+function handleSortChange(select) {
+    const value = select.value;
+    console.log("Selected:", value);
+    localStorage.setItem("sort", value);
+    renderTasks1(); // make sure this exists
+}
+
+function renderTasks1() {
+  const tasksPage = document.getElementById("tasksAll");
+  tasksPage.innerHTML = ""; // clear before re-render
+
+  TaskArray = JSON.parse(localStorage.getItem('tasks')) || [];
+
+  // Get selected sort option
+  const sortOption = localStorage.getItem("sort");
+
+  // Sort based on option
+  TaskArray.sort((a, b) => {
+  // First, push done tasks to the bottom
+  if (a.Done && !b.Done) return 1;
+  if (!a.Done && b.Done) return -1;
+
+  // Then apply the selected sort option
+  if (sortOption === "name") {
+    return (a.name || "").localeCompare(b.name || "");
+  } else if (sortOption === "priority") {
+    return (a.priority || "").localeCompare(b.priority || "");
+  } else {
+    // default: sort by date
+    return new Date(a.lastDate || 0) - new Date(b.lastDate || 0);
+  }
+});
+
+  // Render tasks
+  TaskArray.forEach((task, i) => {
+    if (!task) return;
+
+    const card = document.createElement("div");
+    card.className = "task " + (task.priority || "");
+    const dateLabel = todayTask(task) ? "Today" : (task.lastDate || "");
+    if (task.Done) card.classList.add("done");
+
+    card.innerHTML = `
+      <div class="task-row1">
+        <span class="task-title">${task.name || ""}</span>
+        <span class="task-priority">${task.priority || ""}</span>
+      </div>
+      <div class="task-row2">
+        <span class="task-date">${dateLabel}</span>
+        <span class="task-time">${task.lastTime || ""}</span>
+        <div>
+          <button class="mark-done" data-index="${i}">Mark Done</button>
+          <button class="delete-task" data-index="${i}">Delete</button>
+        </div>
+      </div>
+    `;
+
+    // attach handlers (delete + mark done) here...
+    tasksPage.appendChild(card);
+  });
+}
+
+
 function setActiveNav(li) {
   listButtons.forEach(b => b.classList.remove('active'));
   if (li) li.classList.add('active');
@@ -167,9 +230,7 @@ function switchPage() {
   }
   else if (idx === 1) {
     tasksDisplay.innerHTML = tasksPage.innerHTML;
-    const todays_tasks = document.getElementById('todays_tasks');
-    const upcoming_tasks = document.getElementById('upcoming_tasks');
-    renderTasks(todays_tasks, upcoming_tasks);
+    renderTasks1();
   }
   else if (idx === 3) {
     tasksDisplay.innerHTML = settingsPage.innerHTML;

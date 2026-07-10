@@ -801,4 +801,52 @@ background: #fff;
   font-size: 22px;
   font-weight: 700;
 }
+#Btnrow {
+  display: flex;
+  justify-content: flex-end;
+  margin: 12px 0 16px;
+}
+
+#sortTasks {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding: 8px 44px 8px 14px; /* extra right padding for caret spacing */
+  border: 1px solid #1e5a8e;
+  border-radius: 14px; /* smooth, soft corners */
+  overflow: hidden; /* clip any native popup on supporting browsers */
+  background: linear-gradient(135deg, #1e5a8e 0%, #0d47a1 100%);
+  font-size: 14px;
+  font-weight: 600;
+  color: #000000;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(30, 90, 142, 0.2);
+  transition: all 0.18s ease;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='black' d='M5 6L0 0h10z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center; /* leave space to the right of the caret */
+  background-size: 10px 6px;
+}
+
+#sortTasks:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(30, 90, 142, 0.25);
+}
+
+/* Hide native caret in IE/Edge */
+#sortTasks::-ms-expand { display: none; }
+
+/* Improve focus handling in Firefox */
+#sortTasks:-moz-focusring { color: transparent; text-shadow: 0 0 0 #fff; }
+
+#sortTasks:focus {
+  outline: none;
+  border-color: #5fa8d3;
+  box-shadow: 0 0 0 3px rgba(95, 168, 211, 0.25);
+}
+
+#sortTasks option {
+  color: #1e5a8e;
+  background: #fff;
+}
 }

@@ -1,215 +1,264 @@
 <!doctype html>
 <html lang="en">
-
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="screen-orientation" content="portrait">
-    <meta name="full-screen" content="yes">
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#00629B">
-    <link rel="stylesheet" href="style.css?v=3">
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="screen-orientation" content="portrait" />
+    <meta name="full-screen" content="yes" />
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#00629B" />
+    <link rel="stylesheet" href="style.css?v=3" />
     <script defer src="script.js?v=3"></script>
     <title>TaskFlow</title>
-</head>
+  </head>
 
-<body>
+  <body>
     <div id="green1"></div>
     <div id="green2"></div>
     <div class="navigation">
-        <ul>
-            <li class="list home active">
-                <a href="#">
-                    <span class="icon"><ion-icon name="home-outline"></ion-icon></span>
-                    <span class="text">Home</span>
-                </a>
-            </li>
-            <li class="list tasks">
-                <a href="#">
-                    <span class="icon"><ion-icon name="list-outline"></ion-icon></span>
-                    <span class="text">Tasks</span>
-                </a>
-            </li>
-            <li class="list" id="addTask">
-                <a href="#">
-                    <span class="icon"><ion-icon name="add-outline"></ion-icon></span>
-                    <span class="text">Add</span>
-                </a>
-            </li>
-            <li class="list settings">
-                <a href="#">
-                    <span class="icon"><ion-icon name="settings-outline"></ion-icon></span>
-                    <span class="text">Settings</span>
-                </a>
-            </li>
-            <li class="list profile">
-                <a href="#">
-                    <span class="icon"><ion-icon name="person-outline"></ion-icon></span>
-                    <span class="text">Profile</span>
-                </a>
-            </li>
-            <div class="indicator"></div>
-
-        </ul>
-        <div class="indicator2"></div>
+      <ul>
+        <li class="list home active">
+          <a href="#">
+            <span class="icon"><ion-icon name="home-outline"></ion-icon></span>
+            <span class="text">Home</span>
+          </a>
+        </li>
+        <li class="list tasks">
+          <a href="#">
+            <span class="icon"><ion-icon name="list-outline"></ion-icon></span>
+            <span class="text">Tasks</span>
+          </a>
+        </li>
+        <li class="list" id="addTask">
+          <a href="#">
+            <span class="icon"><ion-icon name="add-outline"></ion-icon></span>
+            <span class="text">Add</span>
+          </a>
+        </li>
+        <li class="list settings">
+          <a href="#">
+            <span class="icon"
+              ><ion-icon name="settings-outline"></ion-icon
+            ></span>
+            <span class="text">Settings</span>
+          </a>
+        </li>
+        <li class="list profile">
+          <a href="#">
+            <span class="icon"
+              ><ion-icon name="person-outline"></ion-icon
+            ></span>
+            <span class="text">Profile</span>
+          </a>
+        </li>
+        <div class="indicator"></div>
+      </ul>
+      <div class="indicator2"></div>
     </div>
 
-
     <main>
-        <header>
-            <nav>
-                <div id="greetings">
-                    <img id="greetings_img" src="" alt="" />
-                    <div id="greetings_cont">
-                        <span id="greetings_name">Hi Athul</span>
-                        <span id="greeting">Good Morning</span>
-                    </div>
-                </div>
-                <div id="search">
-                    <div id="search_box">
-                        <!-- svg -->
-                        <input id="search_input" type="text" placeholder="Search Your Tasks" />
-                        <button id="search_clear" class="search-clear-btn" type="button" title="Clear search">×</button>
-                    </div>
-                </div>
-            </nav>
-        </header>
-        <div id="main_display">
-
-        </div>
+      <header>
+        <nav>
+          <div id="greetings">
+            <img id="greetings_img" src="" alt="" />
+            <div id="greetings_cont">
+              <span id="greetings_name">Hi Athul</span>
+              <span id="greeting">Good Morning</span>
+            </div>
+          </div>
+          <div id="search">
+            <div id="search_box">
+              <!-- svg -->
+              <input
+                id="search_input"
+                type="text"
+                placeholder="Search Your Tasks"
+              />
+              <button
+                id="search_clear"
+                class="search-clear-btn"
+                type="button"
+                title="Clear search"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        </nav>
+      </header>
+      <div id="main_display"></div>
     </main>
-
-
-
 
     <!-- form  -->
     <div id="overlay">
-        <div class="form-container">
-            <h2>Add New Task</h2>
-            <form id="addTaskForm">
-                <label for="taskName">Task Name</label>
-                <input type="text" id="taskName" name="name" placeholder="Enter task name" required />
+      <div class="form-container">
+        <h2>Add New Task</h2>
+        <form id="addTaskForm">
+          <label for="taskName">Task Name</label>
+          <input
+            type="text"
+            id="taskName"
+            name="name"
+            placeholder="Enter task name"
+            required
+          />
 
-                <label for="taskDate">Due Date</label>
-                <input type="date" id="taskDate" name="lastDate" required />
-                <label for="taskTime">Time</label>
-                <input type="time" id="taskTime" name="lastTime" />
+          <label for="taskDate">Due Date</label>
+          <input type="date" id="taskDate" name="lastDate" required />
+          <label for="taskTime">Time</label>
+          <input type="time" id="taskTime" name="lastTime" />
 
-                <label for="priority">Priority</label>
-                <select id="priority" name="priority">
-                    <option value="high">High</option>
-                    <option value="medium">Medium</option>
-                    <option value="low">Low</option>
-                </select>
+          <label for="priority">Priority</label>
+          <select id="priority" name="priority">
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
 
-                <label for="notes">Notes</label>
-                <textarea id="notes" placeholder="Additional details..." name="notes"></textarea>
+          <label for="notes">Notes</label>
+          <textarea
+            id="notes"
+            placeholder="Additional details..."
+            name="notes"
+          ></textarea>
 
-                <button type="submit">Save Task</button>
-                <button type="button" id="closeOverlay">Cancel</button>
-            </form>
-        </div>
+          <button type="submit">Save Task</button>
+          <button type="button" id="closeOverlay">Cancel</button>
+        </form>
+      </div>
     </div>
 
     <!-- Overlay -->
     <div id="overlay1">
-        <div class="Login_cont">
-            <h2>Hi, Welcome to Task Flow</h2>
-            <form id="loginForm">
-                <label for="">Name</label>
-                <input type="text" id="username" placeholder="Enter your name" required>
-                <label for="">Profile Picture</label>
-                <input type="file" id="pfpUpload" accept="image/*">
-                <div style="width:100%;display: flex;flex-direction: column;align-items: center;">
-                    <p>Or choose an avatar:</p>
-                    <select id="avatarSelect" style="display:none;">
-                        <option value="assets/image/avatar1.png">Avatar 1</option>
-                        <option value="assets/image/avatar2.png">Avatar 2</option>
-                        <option value="assets/image/avatar3.png">Avatar 3</option>
-                    </select>
-                    <div class="avatar-options">
-                        <img src="assets/image/avatar1.png" alt="avatar1" data-value="assets/image/avatar1.png">
-                        <img src="assets/image/avatar2.png" alt="avatar2" data-value="assets/image/avatar2.png">
-                        <img src="assets/image/avatar3.png" alt="avatar3" data-value="assets/image/avatar3.png">
-                    </div>
+      <div class="Login_cont">
+        <h2>Hi, Welcome to Task Flow</h2>
+        <form id="loginForm">
+          <label for="">Name</label>
+          <input
+            type="text"
+            id="username"
+            placeholder="Enter your name"
+            required
+          />
+          <label for="">Profile Picture</label>
+          <input type="file" id="pfpUpload" accept="image/*" />
+          <div
+            style="
+              width: 100%;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+            "
+          >
+            <p>Or choose an avatar:</p>
+            <select id="avatarSelect" style="display: none">
+              <option value="assets/image/avatar1.png">Avatar 1</option>
+              <option value="assets/image/avatar2.png">Avatar 2</option>
+              <option value="assets/image/avatar3.png">Avatar 3</option>
+            </select>
+            <div class="avatar-options">
+              <img
+                src="assets/image/avatar1.png"
+                alt="avatar1"
+                data-value="assets/image/avatar1.png"
+              />
+              <img
+                src="assets/image/avatar2.png"
+                alt="avatar2"
+                data-value="assets/image/avatar2.png"
+              />
+              <img
+                src="assets/image/avatar3.png"
+                alt="avatar3"
+                data-value="assets/image/avatar3.png"
+              />
+            </div>
 
-                    <button type="submit">Save</button>
-                </div>
-            </form>
-        </div>
+            <button type="submit">Save</button>
+          </div>
+        </form>
+      </div>
     </div>
     <div id="overlay3">
-        <div id="delete_popup">
-            <p>Are you sure you want to delete this task?</p>
-            <div>
-                <button id="confirmDelete">Yes</button>
-                <button id="cancelDelete">No</button>
-            </div>
+      <div id="delete_popup">
+        <p>Are you sure you want to delete this task?</p>
+        <div>
+          <button id="confirmDelete">Yes</button>
+          <button id="cancelDelete">No</button>
         </div>
+      </div>
     </div>
     <div id="overlay4">
-        <div id="mark_done">
-            <p>Are you sure you want to mark this task as done?</p>
-            <div>
-                <button id="confirmMarkDone">Yes</button>
-                <button id="cancelMarkDone">No</button>
-            </div>
+      <div id="mark_done">
+        <p>Are you sure you want to mark this task as done?</p>
+        <div>
+          <button id="confirmMarkDone">Yes</button>
+          <button id="cancelMarkDone">No</button>
         </div>
+      </div>
     </div>
-    <div id="tasks_page" style="display: none;">
-        <div id="todays_tasks">
-            <h5>Today's Tasks</h5>
-        </div>
-        <div id="upcoming_tasks">
-            <h5>Upcoming Tasks</h5>
-        </div>
+    <div id="tasks_page" style="display: none">
+      <div id="Btnrow">
+        <select id="sortTasks" onchange="handleSortChange(this)">
+          <option value="date" selected>Date</option>
+          <option value="name">Name</option>
+          <option value="priority">Priority</option>
+        </select>
+      </div>
+      <div id="tasksAll"></div>
     </div>
-    <div id="home_page" style="display: none;">
-        <div class="progress-card">
-            <div class="progress-header">
-                <div>
-                    <h3>Your Progress</h3>
-                    <p class="progress-subtitle">Task completion overview</p>
-                </div>
-                <span id="progress_percent" class="progress-percentage">0%</span>
-            </div>
-            <div id="progressbar">
-                <div id="progress_width"></div>
-            </div>
+    <div id="home_page" style="display: none">
+      <div class="progress-card">
+        <div class="progress-header">
+          <div>
+            <h3>Your Progress</h3>
+            <p class="progress-subtitle">Task completion overview</p>
+          </div>
+          <span id="progress_percent" class="progress-percentage">0%</span>
         </div>
-        <div class="task-summary">
-            <div class="summary-card today-card">
-                <div class="card-header">
-                    <div class="card-icon">📅</div>
-                    <p class="card-label">Today's Tasks</p>
-                </div>
-                <span id="today_count" class="card-count">0</span>
-            </div>
-            <div class="summary-card upcoming-card">
-                <div class="card-header">
-                    <div class="card-icon">🚀</div>
-                    <p class="card-label">Upcoming Tasks</p>
-                </div>
-                <span id="upcoming_count" class="card-count">0</span>
-            </div>
+        <div id="progressbar">
+          <div id="progress_width"></div>
         </div>
-        <div id="todays_tasks">
-            <h5>Today's Tasks</h5>
+      </div>
+      <div class="task-summary">
+        <div class="summary-card today-card">
+          <div class="card-header">
+            <div class="card-icon">📅</div>
+            <p class="card-label">Today's Tasks</p>
+          </div>
+          <span id="today_count" class="card-count">0</span>
         </div>
-        <div id="upcoming_tasks">
-            <h5>Upcoming Tasks</h5>
+        <div class="summary-card upcoming-card">
+          <div class="card-header">
+            <div class="card-icon">🚀</div>
+            <p class="card-label">Upcoming Tasks</p>
+          </div>
+          <span id="upcoming_count" class="card-count">0</span>
         </div>
-    </div>
-    <div id="settings_page" style="display: none;">
-        <h5>Settings Page</h5>
-    </div>
-    <div id="profile_page" style="display: none;">
-        <h5>Profile Page</h5>
-    </div>
-    <script type="module" src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.esm.js"></script>
-    <script nomodule src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.js"></script>
-</body>
+      </div>
 
+      <div id="todays_tasks">
+        <h5>Today's Tasks</h5>
+      </div>
+      <div id="upcoming_tasks">
+        <h5>Upcoming Tasks</h5>
+      </div>
+    </div>
+    <div id="settings_page" style="display: none">
+      <h5>Settings Page</h5>
+    </div>
+    <div id="profile_page" style="display: none">
+      <h5>Profile Page</h5>
+    </div>
+    <script
+      type="module"
+      src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.esm.js"
+    ></script>
+    <script
+      nomodule
+      src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.js"
+    ></script>
+  </body>
 </html>
