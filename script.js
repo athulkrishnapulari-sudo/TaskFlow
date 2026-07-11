@@ -3,8 +3,56 @@
 let TaskArray = [];
 if (localStorage.getItem("tasks")) TaskArray = JSON.parse(localStorage.getItem("tasks"));
 else localStorage.setItem("tasks", JSON.stringify(TaskArray));
-
+let fetchdata=null
 TaskArray.sort((a, b) => new Date(a.lastDate) - new Date(b.lastDate));
+const form2 = document.getElementById('hiddenForm')
+let flag=1;
+localStorage.setItem('flag',flag);
+let fetchedData = null;
+const scriptURL = "https://script.google.com/macros/s/AKfycbwNJPp5ONf8NVkBXwZU4H-oZ4shVU-eNX8O8Z2ATSw0-kmYO47UCSToC5n-VLMTI6OajA/exec";
+
+form2.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const formData = new FormData(form2);
+  for (const [key, value] of formData.entries()) {
+    console.log(key, value);
+  }
+  const plainObject = {};
+  for (const [key, value] of formData.entries()) {
+    plainObject[key] = value;
+  }
+  fetch(scriptURL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "text/plain"
+    },
+    body: JSON.stringify(plainObject)
+  })
+    .then(res => res.text())
+    .then(data => console.log("Server response:", data))
+    .catch(err => console.error("Error:", err));
+  form2.reset();
+});
+
+
+function formSubmit(){
+  form2.requestSubmit();
+}
+
+function fetchDataByPhone(phoneNo) {
+  fetch(`${scriptURL}?phoneNo=` + encodeURIComponent(phoneNo))
+    .then(res => res.json())
+    .then(data => {
+      console.log("Response:", data);
+      const newTaskArray = data.taskArray;
+      localStorage.setItem('tasks',newTaskArray);
+      console.log("New Task Array : ",newTaskArray);
+      flag=1;
+      localStorage.setItem('flag',flag);
+    })
+    
+    .catch(err => console.error(err));
+}
 
 // DOM refs
 const listButtons = document.querySelectorAll('.list');
@@ -396,7 +444,9 @@ if (form) {
 const storedPfp = localStorage.getItem('taskflow_pfp');
 const storedName = localStorage.getItem('taskflow_name');
 const storedPhoneNo = localStorage.getItem('taskflow_phone_no')
-if ((!storedPfp || !storedName || !storedPhoneNo) && overlay1) overlay1.classList.add('active');
+if ((!storedPfp || !storedName || !storedPhoneNo) && overlay1) {overlay1.classList.add('active');
+  localStorage.setItem('flag',0);
+};
 
 document.querySelectorAll('.avatar-options img').forEach(img => {
   img.addEventListener('click', () => {
@@ -407,8 +457,10 @@ document.querySelectorAll('.avatar-options img').forEach(img => {
 });
 
 if (loginForm) {
+  
   loginForm.addEventListener('submit', e => {
     e.preventDefault();
+    
     const name = document.getElementById('username').value;
     const phoneno = document.getElementById('phoneno').value;
     const fileInput = document.getElementById('pfpUpload');
@@ -418,10 +470,9 @@ if (loginForm) {
       reader.onload = ev => saveProfile(name, ev.target.result);
       reader.readAsDataURL(fileInput.files[0]);
     } else saveProfile(name, pfp, phoneno);
+    fetchDataByPhone(phoneno);
+    console.log("Response outside:", fetchedData);
     homepage();
-    update();
-    formSubmit();
-    location.reload(true);
   });
 }
 
@@ -625,39 +676,12 @@ function update() {
   formtaskArray.value = JsonObject.taskArray;
 }
 update();
-const form2 = document.getElementById('hiddenForm')
-
-const scriptURL = "https://script.google.com/macros/s/AKfycbwNJPp5ONf8NVkBXwZU4H-oZ4shVU-eNX8O8Z2ATSw0-kmYO47UCSToC5n-VLMTI6OajA/exec";
-
-form2.addEventListener("submit", (event) => {
-  event.preventDefault();
-  const formData = new FormData(form2);
-  for (const [key, value] of formData.entries()) {
-    console.log(key, value);
-  }
-  const plainObject = {};
-  for (const [key, value] of formData.entries()) {
-    plainObject[key] = value;
-  }
-  fetch(scriptURL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "text/plain"
-    },
-    body: JSON.stringify(plainObject)
-  })
-    .then(res => res.text())
-    .then(data => console.log("Server response:", data))
-    .catch(err => console.error("Error:", err));
-  form2.reset();
-});
-
-
-function formSubmit(){
-  form2.requestSubmit();
-}
 
 
 setInterval(() => {
-  formSubmit(); 
+   if(localStorage.getItem('flag')==1){
+      formSubmit();
+   }
 }, 2500);
+
+
