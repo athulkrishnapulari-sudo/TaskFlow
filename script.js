@@ -1,14 +1,49 @@
 // TaskFlow - navigation, tasks, overlay, search
 
 let TaskArray = [];
-if (localStorage.getItem("tasks")) TaskArray = JSON.parse(localStorage.getItem("tasks"));
-else localStorage.setItem("tasks", JSON.stringify(TaskArray));
+if (localStorage.getItem("tasks")) {
+  try {
+    const stored = JSON.parse(localStorage.getItem("tasks"));
+    TaskArray = Array.isArray(stored) ? stored : [];
+  } catch (e) {
+    console.error('Error parsing stored tasks:', e);
+    TaskArray = [];
+  }
+} else {
+  localStorage.setItem("tasks", JSON.stringify(TaskArray));
+}
 let fetchdata=null
-TaskArray.sort((a, b) => new Date(a.lastDate) - new Date(b.lastDate));
+
+// Sort function with error handling
+function sortTaskArray(arr) {
+  // Ensure we always have an array
+  if (typeof arr === 'string') {
+    try {
+      arr = JSON.parse(arr);
+    } catch (e) {
+      console.error('Failed to parse array:', e);
+      return [];
+    }
+  }
+  if (!Array.isArray(arr)) {
+    console.warn('sortTaskArray received non-array:', arr);
+    return [];
+  }
+  return arr.sort((a, b) => {
+    if (!a || !b) return 0;
+    const dateA = new Date(a.lastDate || 0).getTime();
+    const dateB = new Date(b.lastDate || 0).getTime();
+    return dateA - dateB;
+  });
+}
+
+TaskArray = sortTaskArray(TaskArray);
 const form2 = document.getElementById('hiddenForm')
 let flag=1;
 localStorage.setItem('flag',flag);
 let fetchedData = null;
+let syncInterval = null;
+let currentPhoneNo = localStorage.getItem('taskflow_phone_no') || null;
 const scriptURL = "https://script.google.com/macros/s/AKfycbwNJPp5ONf8NVkBXwZU4H-oZ4shVU-eNX8O8Z2ATSw0-kmYO47UCSToC5n-VLMTI6OajA/exec";
 
 form2.addEventListener("submit", (event) => {
@@ -40,18 +75,99 @@ function formSubmit(){
 }
 
 function fetchDataByPhone(phoneNo) {
-  fetch(`${scriptURL}?phoneNo=` + encodeURIComponent(phoneNo))
+  return fetch(`${scriptURL}?phoneNo=` + encodeURIComponent(phoneNo))
     .then(res => res.json())
     .then(data => {
       console.log("Response:", data);
-      const newTaskArray = data.taskArray;
-      localStorage.setItem('tasks',newTaskArray);
-      console.log("New Task Array : ",newTaskArray);
-      flag=1;
-      localStorage.setItem('flag',flag);
+      let newTaskArray = data.taskArray;
+      
+      // Handle if taskArray is a string (needs parsing)
+      if (typeof newTaskArray === 'string') {
+        try {
+          newTaskArray = JSON.parse(newTaskArray);
+        } catch (e) {
+          console.error('Failed to parse taskArray:', e);
+          newTaskArray = [];
+        }
+      }
+      
+      // Ensure it's an array
+      if (!Array.isArray(newTaskArray)) {
+        console.warn('taskArray is not an array:', newTaskArray);
+        newTaskArray = [];
+      }
+      
+      localStorage.setItem('tasks', JSON.stringify(newTaskArray));
+      TaskArray = sortTaskArray(newTaskArray);
+      console.log("New Task Array : ", TaskArray);
+      return data;
     })
+    .catch(err => {
+      console.error(err);
+    });
+}
+
+// Continuous fetch - retrieves data from backend every 5 seconds
+function startContinuousFetch(phoneNo) {
+  if (syncInterval) clearInterval(syncInterval);
+  
+  syncInterval = setInterval(() => {
+    console.log("Fetching data from backend...");
+    fetchDataByPhone(phoneNo).then(() => {
+      console.log("Data updated, refreshing UI...");
+      // Refresh the current active page
+      refreshCurrentView();
+    }).catch(err => {
+      console.error("Fetch failed:", err);
+    });
+  }, 5000); // Fetch every 5 seconds
+}
+
+// Refresh the currently active page view
+function refreshCurrentView() {
+  const active = document.querySelector('.list.active') || listButtons[0];
+  const idx = Array.from(listButtons).indexOf(active);
+  
+  // Update homepage stats
+  homepage();
+  
+  // Refresh the active page content
+  if (idx === 0) {
+    // Home page
+    const todays_tasks = document.getElementById('todays_tasks');
+    const upcoming_tasks = document.getElementById('upcoming_tasks');
+    if (todays_tasks && upcoming_tasks) {
+      renderTasks(todays_tasks, upcoming_tasks);
+    }
+  } else if (idx === 1) {
+    // Tasks page
+    renderTasks1();
+  }
+}
+
+// Upload - only called when tasks are modified
+function uploadChanges() {
+  const localName = localStorage.getItem('taskflow_name');
+  const localPhoneNo = localStorage.getItem('taskflow_phone_no');
+  const JsonObject = { "name": localName, "phoneNo": localPhoneNo, "taskArray": JSON.stringify(TaskArray) };
+  console.log("Uploading changes:", JsonObject);
+  
+  const formname = document.getElementById("name");
+  const formphoneno = document.getElementById('phoneNo');
+  const formtaskArray = document.getElementById('taskArray');
+  
+  if (formname && formphoneno && formtaskArray) {
+    formname.value = JsonObject.name;
+    formphoneno.value = JsonObject.phoneNo;
+    formtaskArray.value = JsonObject.taskArray;
     
-    .catch(err => console.error(err));
+    form2.requestSubmit();
+    
+    // Refresh UI after upload
+    setTimeout(() => {
+      refreshCurrentView();
+    }, 500);
+  }
 }
 
 // DOM refs
@@ -131,8 +247,10 @@ function renderTasks(targetTodays = todays_tasks, targetUpcoming = upcoming_task
   targetTodays.innerHTML = '<h6>Today</h6>';
   targetUpcoming.innerHTML = '<h6>Upcoming</h6>';
 
-  // Reload TaskArray from localStorage to stay in sync
-  TaskArray = JSON.parse(localStorage.getItem('tasks')) || [];
+  // Reload TaskArray from localStorage to stay in sync - ensure it's always an array
+  let stored = JSON.parse(localStorage.getItem('tasks')) || [];
+  TaskArray = Array.isArray(stored) ? stored : [];
+  TaskArray = sortTaskArray(TaskArray);
   // Separate tasks into today and upcoming lists (preserve original indexes)
   const todaysList = [];
   const upcomingList = [];
@@ -178,7 +296,7 @@ function renderTasks(targetTodays = todays_tasks, targetUpcoming = upcoming_task
         renderTasks(targetTodays, targetUpcoming);
         deletepopup.classList.remove('active');
         homepage();
-        update();
+        uploadChanges();
       location.reload(true);
       }
       noBtn.onclick = () => {
@@ -201,9 +319,8 @@ function renderTasks(targetTodays = todays_tasks, targetUpcoming = upcoming_task
         renderTasks(targetTodays, targetUpcoming);
         markDonePopup.classList.remove('active');
         homepage();
-        update();
+        uploadChanges();
         location.reload(true);
-        formSubmit()
       }
 
       cancelBtn.onclick = () => {
@@ -262,16 +379,16 @@ function handleSortChange(select) {
   console.log("Selected:", value);
   localStorage.setItem("sort", value);
   renderTasks1(); // make sure this exists
-  update();
   location.reload(true);
-  formSubmit()
 }
 
 function renderTasks1() {
   const tasksPage = document.getElementById("tasksAll");
   tasksPage.innerHTML = ""; // clear before re-render
 
-  TaskArray = JSON.parse(localStorage.getItem('tasks')) || [];
+  let stored = JSON.parse(localStorage.getItem('tasks')) || [];
+  TaskArray = Array.isArray(stored) ? stored : [];
+  TaskArray = sortTaskArray(TaskArray);
 
   // Get selected sort option
   const sortOption = localStorage.getItem("sort");
@@ -326,9 +443,8 @@ function renderTasks1() {
         localStorage.setItem('tasks', JSON.stringify(TaskArray));
         renderTasks1(); deletepopup.classList.remove('active');
         homepage();
-        update();
+        uploadChanges();
         location.reload(true);
-        formSubmit()
       }
       noBtn.onclick = () => {
         deletepopup.classList.remove('active');
@@ -349,9 +465,8 @@ function renderTasks1() {
         renderTasks1();
         markDonePopup.classList.remove('active');
         homepage();
-        update();
+        uploadChanges();
         location.reload(true);
-        formSubmit()
       }
 
       cancelBtn.onclick = () => {
@@ -434,9 +549,8 @@ if (form) {
     overlay.classList.remove('active');
     setActiveNav(listButtons[1] || null);
     switchPage();
-    formSubmit();
-    update();
-      location.reload(true);
+    uploadChanges();
+    location.reload(true);
   });
 }
 
@@ -467,12 +581,20 @@ if (loginForm) {
     let pfp = avatarSelect ? avatarSelect.value : null;
     if (fileInput && fileInput.files.length > 0) {
       const reader = new FileReader();
-      reader.onload = ev => saveProfile(name, ev.target.result);
+      reader.onload = ev => saveProfile(name, ev.target.result, phoneno);
       reader.readAsDataURL(fileInput.files[0]);
     } else saveProfile(name, pfp, phoneno);
-    fetchDataByPhone(phoneno);
-    console.log("Response outside:", fetchedData);
-    homepage();
+    
+    // Fetch data and wait for completion before proceeding
+    fetchDataByPhone(phoneno).then(() => {
+      console.log("Data fetched and stored in localStorage");
+      currentPhoneNo = phoneno;
+      // Start continuous fetch after login
+      startContinuousFetch(phoneno);
+      refreshCurrentView();
+    }).catch(err => {
+      console.error("Failed to fetch data:", err);
+    });
   });
 }
 
@@ -636,7 +758,7 @@ function showTaskDetails(task, index) {
         overlay5.classList.remove('active');
         renderTasks(); renderTasks1(); homepage();
         deletepopup.classList.remove('active');
-        update();
+        uploadChanges();
       location.reload(true);
       }
       noBtn.onclick = () => deletepopup.classList.remove('active');
@@ -648,7 +770,7 @@ function showTaskDetails(task, index) {
       localStorage.setItem('tasks', JSON.stringify(TaskArray));
       overlay5.classList.remove('active');
       renderTasks(); renderTasks1(); homepage();
-      update();
+      uploadChanges();
       location.reload(true);
     });
   }
@@ -675,13 +797,15 @@ function update() {
   formphoneno.value = JsonObject.phoneNo;
   formtaskArray.value = JsonObject.taskArray;
 }
-update();
 
-
-setInterval(() => {
-   if(localStorage.getItem('flag')==1){
-      formSubmit();
-   }
-}, 2500);
+// Initialize with existing data if user is logged in
+if (currentPhoneNo) {
+  fetchDataByPhone(currentPhoneNo).then(() => {
+    startContinuousFetch(currentPhoneNo);
+    refreshCurrentView();
+  }).catch(err => {
+    console.error("Initial fetch failed:", err);
+  });
+}
 
 
