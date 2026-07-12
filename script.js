@@ -1,6 +1,12 @@
 // TaskFlow - navigation, tasks, overlay, search
 
 let TaskArray = [];
+let fetchdata = null;
+let lastSyncedTaskState = null;
+let syncInterval = null;
+let currentPhoneNo = localStorage.getItem('taskflow_phone_no') || null;
+let suppressNextFetch = false;
+
 if (localStorage.getItem("tasks")) {
   try {
     const stored = JSON.parse(localStorage.getItem("tasks"));
@@ -12,7 +18,38 @@ if (localStorage.getItem("tasks")) {
 } else {
   localStorage.setItem("tasks", JSON.stringify(TaskArray));
 }
-let fetchdata=null
+
+function getStoredSettings() {
+  return {
+    theme: localStorage.getItem('taskflow_theme') || 'light',
+    notifications: localStorage.getItem('taskflow_notifications') || 'true',
+    defaultPage: localStorage.getItem('taskflow_default_page') || 'home'
+  };
+}
+
+function clearSavedAccountData(preserveSettings = true) {
+  const settings = preserveSettings ? getStoredSettings() : null;
+  localStorage.removeItem('tasks');
+  localStorage.removeItem('taskflow_name');
+  localStorage.removeItem('taskflow_phone_no');
+  localStorage.removeItem('taskflow_pfp');
+  localStorage.removeItem('flag');
+  localStorage.removeItem('sort');
+  TaskArray = [];
+  localStorage.setItem('tasks', JSON.stringify(TaskArray));
+  lastSyncedTaskState = null;
+
+  if (settings) {
+    localStorage.setItem('taskflow_theme', settings.theme);
+    localStorage.setItem('taskflow_notifications', settings.notifications);
+    localStorage.setItem('taskflow_default_page', settings.defaultPage);
+  }
+}
+
+function persistTasksToStorage() {
+  localStorage.setItem('tasks', JSON.stringify(TaskArray));
+  lastSyncedTaskState = JSON.stringify(TaskArray);
+}
 
 // Sort function with error handling
 function sortTaskArray(arr) {
@@ -42,20 +79,54 @@ const form2 = document.getElementById('hiddenForm')
 let flag=1;
 localStorage.setItem('flag',flag);
 let fetchedData = null;
-let syncInterval = null;
-let currentPhoneNo = localStorage.getItem('taskflow_phone_no') || null;
 const scriptURL = "https://script.google.com/macros/s/AKfycbwNJPp5ONf8NVkBXwZU4H-oZ4shVU-eNX8O8Z2ATSw0-kmYO47UCSToC5n-VLMTI6OajA/exec";
 
 form2.addEventListener("submit", (event) => {
   event.preventDefault();
-  const formData = new FormData(form2);
-  for (const [key, value] of formData.entries()) {
-    console.log(key, value);
+
+  const nameField = document.getElementById('name');
+  const phoneField = document.getElementById('phoneNo');
+  const taskField = document.getElementById('taskArray');
+  const pfpField = document.getElementById('pfpRoute');
+  const defaultPageField = document.getElementById('defaultPage');
+  const themeField = document.getElementById('theme');
+  const notificationsField = document.getElementById('notifications');
+
+  const currentTaskState = JSON.stringify(TaskArray);
+  const plainObject = {
+    name: localStorage.getItem('taskflow_name') || '',
+    phoneNo: localStorage.getItem('taskflow_phone_no') || '',
+    taskArray: currentTaskState,
+    pfpRoute: localStorage.getItem('taskflow_pfp') || '',
+    defaultPage: localStorage.getItem('taskflow_default_page') || 'home',
+    theme: localStorage.getItem('taskflow_theme') || 'light',
+    notifications: localStorage.getItem('taskflow_notifications') || 'true'
+  };
+
+  if (nameField) {
+    nameField.value = plainObject.name;
   }
-  const plainObject = {};
-  for (const [key, value] of formData.entries()) {
-    plainObject[key] = value;
+  if (phoneField) {
+    phoneField.value = plainObject.phoneNo;
   }
+  if (taskField) {
+    taskField.value = plainObject.taskArray;
+  }
+  if (pfpField) {
+    pfpField.value = plainObject.pfpRoute;
+  }
+  if (defaultPageField) {
+    defaultPageField.value = plainObject.defaultPage;
+  }
+  if (themeField) {
+    themeField.value = plainObject.theme;
+  }
+  if (notificationsField) {
+    notificationsField.value = plainObject.notifications;
+  }
+
+  console.log("Submitting payload:", plainObject);
+
   fetch(scriptURL, {
     method: "POST",
     headers: {
@@ -66,7 +137,6 @@ form2.addEventListener("submit", (event) => {
     .then(res => res.text())
     .then(data => console.log("Server response:", data))
     .catch(err => console.error("Error:", err));
-  form2.reset();
 });
 
 
@@ -75,13 +145,18 @@ function formSubmit(){
 }
 
 function fetchDataByPhone(phoneNo) {
+  if (!phoneNo) return Promise.resolve(null);
+  if (suppressNextFetch) {
+    suppressNextFetch = false;
+    return Promise.resolve(null);
+  }
+
   return fetch(`${scriptURL}?phoneNo=` + encodeURIComponent(phoneNo))
     .then(res => res.json())
     .then(data => {
       console.log("Response:", data);
       let newTaskArray = data.taskArray;
-      
-      // Handle if taskArray is a string (needs parsing)
+
       if (typeof newTaskArray === 'string') {
         try {
           newTaskArray = JSON.parse(newTaskArray);
@@ -90,37 +165,48 @@ function fetchDataByPhone(phoneNo) {
           newTaskArray = [];
         }
       }
-      
-      // Ensure it's an array
+
       if (!Array.isArray(newTaskArray)) {
         console.warn('taskArray is not an array:', newTaskArray);
         newTaskArray = [];
       }
-      
-      localStorage.setItem('tasks', JSON.stringify(newTaskArray));
+
       TaskArray = sortTaskArray(newTaskArray);
+      persistTasksToStorage();
+
+      if (data.pfpRoute || data.pfp || data.profilePicture) {
+        localStorage.setItem('taskflow_pfp', data.pfpRoute || data.pfp || data.profilePicture);
+      }
+      if (data.defaultPage) {
+        localStorage.setItem('taskflow_default_page', data.defaultPage);
+      }
+      if (data.theme) {
+        localStorage.setItem('taskflow_theme', data.theme);
+      }
+      if (data.notifications !== undefined && data.notifications !== null) {
+        localStorage.setItem('taskflow_notifications', String(data.notifications));
+      }
+
       console.log("New Task Array : ", TaskArray);
       return data;
     })
     .catch(err => {
       console.error(err);
+      return null;
     });
 }
 
-// Continuous fetch - retrieves data from backend every 5 seconds
 function startContinuousFetch(phoneNo) {
-  if (syncInterval) clearInterval(syncInterval);
-  
-  syncInterval = setInterval(() => {
-    console.log("Fetching data from backend...");
-    fetchDataByPhone(phoneNo).then(() => {
-      console.log("Data updated, refreshing UI...");
-      // Refresh the current active page
-      refreshCurrentView();
-    }).catch(err => {
-      console.error("Fetch failed:", err);
-    });
-  }, 5000); // Fetch every 5 seconds
+  if (!phoneNo) return Promise.resolve(null);
+
+  console.log("Loading latest shared data from sheet...");
+  return fetchDataByPhone(phoneNo).then(() => {
+    console.log("Sheet data loaded and saved locally.");
+    refreshCurrentView();
+  }).catch(err => {
+    console.error("Fetch failed:", err);
+    return null;
+  });
 }
 
 // Refresh the currently active page view
@@ -146,28 +232,38 @@ function refreshCurrentView() {
 }
 
 // Upload - only called when tasks are modified
-function uploadChanges() {
+function uploadChanges(force = false) {
   const localName = localStorage.getItem('taskflow_name');
   const localPhoneNo = localStorage.getItem('taskflow_phone_no');
-  const JsonObject = { "name": localName, "phoneNo": localPhoneNo, "taskArray": JSON.stringify(TaskArray) };
+  if (!localName || !localPhoneNo) return Promise.resolve(false);
+
+  const currentState = JSON.stringify(TaskArray);
+  if (!force && lastSyncedTaskState === currentState) return Promise.resolve(false);
+
+  const JsonObject = { "name": localName, "phoneNo": localPhoneNo, "taskArray": currentState, "pfpRoute": localStorage.getItem('taskflow_pfp') || '', "defaultPage": localStorage.getItem('taskflow_default_page') || 'home', "theme": localStorage.getItem('taskflow_theme') || 'light', "notifications": localStorage.getItem('taskflow_notifications') || 'true' };
   console.log("Uploading changes:", JsonObject);
-  
+
   const formname = document.getElementById("name");
   const formphoneno = document.getElementById('phoneNo');
   const formtaskArray = document.getElementById('taskArray');
-  
+  const formPfpRoute = document.getElementById('pfpRoute');
+  const formDefaultPage = document.getElementById('defaultPage');
+  const formTheme = document.getElementById('theme');
+  const formNotifications = document.getElementById('notifications');
+
   if (formname && formphoneno && formtaskArray) {
-    formname.value = JsonObject.name;
-    formphoneno.value = JsonObject.phoneNo;
-    formtaskArray.value = JsonObject.taskArray;
-    
+    formname.value = JsonObject.name || '';
+    formphoneno.value = JsonObject.phoneNo || '';
+    formtaskArray.value = JsonObject.taskArray || '[]';
+    if (formPfpRoute) formPfpRoute.value = localStorage.getItem('taskflow_pfp') || '';
+    if (formDefaultPage) formDefaultPage.value = localStorage.getItem('taskflow_default_page') || 'home';
+    if (formTheme) formTheme.value = localStorage.getItem('taskflow_theme') || 'light';
+    if (formNotifications) formNotifications.value = localStorage.getItem('taskflow_notifications') || 'true';
+    lastSyncedTaskState = currentState;
     form2.requestSubmit();
-    
-    // Refresh UI after upload
-    setTimeout(() => {
-      refreshCurrentView();
-    }, 500);
   }
+
+  return Promise.resolve(true);
 }
 
 // DOM refs
@@ -182,7 +278,6 @@ const search_input = document.getElementById('search_input');
 const greetings_img = document.getElementById('greetings_img');
 const greetings_img2 = document.getElementById('greetings_img2');
 const greetings_name = document.getElementById('greetings_name');
-const name2 = document.getElementById('name2');
 const overlay1 = document.getElementById('overlay1');
 const loginForm = document.getElementById('loginForm');
 const avatarSelect = document.getElementById('avatarSelect');
@@ -190,6 +285,11 @@ const tasksPage = document.getElementById('tasks_page');
 const homePage = document.getElementById('home_page');
 const settingsPage = document.getElementById('settings_page');
 const profilePage = document.getElementById('profile_page');
+const themeSelect = document.getElementById('themeSelect');
+const notificationsToggle = document.getElementById('notificationsToggle');
+const defaultPageSelect = document.getElementById('defaultPageSelect');
+const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+const logoutBtn = document.getElementById('logoutBtn');
 
 // time & greeting
 const now = new Date();
@@ -292,12 +392,16 @@ function renderTasks(targetTodays = todays_tasks, targetUpcoming = upcoming_task
       const noBtn = document.getElementById('cancelDelete');
       yesBtn.onclick = () => {
         TaskArray.splice(i, 1);
-        localStorage.setItem('tasks', JSON.stringify(TaskArray));
+        persistTasksToStorage();
         renderTasks(targetTodays, targetUpcoming);
         deletepopup.classList.remove('active');
         homepage();
-        uploadChanges();
-      location.reload(true);
+        uploadChanges(true).then(() => {
+          if (currentPhoneNo) {
+            suppressNextFetch = true;
+            startContinuousFetch(currentPhoneNo);
+          }
+        });
       }
       noBtn.onclick = () => {
         deletepopup.classList.remove('active');
@@ -315,12 +419,16 @@ function renderTasks(targetTodays = todays_tasks, targetUpcoming = upcoming_task
       const cancelBtn = document.getElementById('cancelMarkDone');
       confirmBtn.onclick = () => {
         TaskArray[i].Done = true;
-        localStorage.setItem('tasks', JSON.stringify(TaskArray));
+        persistTasksToStorage();
         renderTasks(targetTodays, targetUpcoming);
         markDonePopup.classList.remove('active');
         homepage();
-        uploadChanges();
-        location.reload(true);
+        uploadChanges(true).then(() => {
+          if (currentPhoneNo) {
+            suppressNextFetch = true;
+            startContinuousFetch(currentPhoneNo);
+          }
+        });
       }
 
       cancelBtn.onclick = () => {
@@ -378,8 +486,7 @@ function handleSortChange(select) {
   const value = select.value;
   console.log("Selected:", value);
   localStorage.setItem("sort", value);
-  renderTasks1(); // make sure this exists
-  location.reload(true);
+  renderTasks1();
 }
 
 function renderTasks1() {
@@ -440,11 +547,15 @@ function renderTasks1() {
       const noBtn = document.getElementById('cancelDelete');
       yesBtn.onclick = () => {
         TaskArray.splice(i, 1);
-        localStorage.setItem('tasks', JSON.stringify(TaskArray));
+        persistTasksToStorage();
         renderTasks1(); deletepopup.classList.remove('active');
         homepage();
-        uploadChanges();
-        location.reload(true);
+        uploadChanges(true).then(() => {
+          if (currentPhoneNo) {
+            suppressNextFetch = true;
+            startContinuousFetch(currentPhoneNo);
+          }
+        });
       }
       noBtn.onclick = () => {
         deletepopup.classList.remove('active');
@@ -461,12 +572,16 @@ function renderTasks1() {
       const cancelBtn = document.getElementById('cancelMarkDone');
       confirmBtn.onclick = () => {
         TaskArray[i].Done = true;
-        localStorage.setItem('tasks', JSON.stringify(TaskArray));
+        persistTasksToStorage();
         renderTasks1();
         markDonePopup.classList.remove('active');
         homepage();
-        uploadChanges();
-        location.reload(true);
+        uploadChanges(true).then(() => {
+          if (currentPhoneNo) {
+            suppressNextFetch = true;
+            startContinuousFetch(currentPhoneNo);
+          }
+        });
       }
 
       cancelBtn.onclick = () => {
@@ -489,6 +604,75 @@ function setActiveNav(li) {
   if (li) li.classList.add('active');
 }
 
+function applyTheme(theme) {
+  const resolvedTheme = theme === 'dark' ? 'dark' : 'light';
+  document.body.classList.toggle('dark', resolvedTheme === 'dark');
+  document.documentElement.setAttribute('data-theme', resolvedTheme);
+  localStorage.setItem('taskflow_theme', resolvedTheme);
+}
+
+function applySettings() {
+  const savedSettings = getStoredSettings();
+  applyTheme(savedSettings.theme);
+
+  const liveThemeSelect = document.getElementById('themeSelect');
+  const liveNotificationsToggle = document.getElementById('notificationsToggle');
+  const liveDefaultPageSelect = document.getElementById('defaultPageSelect');
+
+  if (liveThemeSelect) liveThemeSelect.value = savedSettings.theme;
+  if (liveNotificationsToggle) liveNotificationsToggle.checked = savedSettings.notifications !== 'false';
+  if (liveDefaultPageSelect) liveDefaultPageSelect.value = savedSettings.defaultPage;
+}
+
+function navigateToPage(pageKey) {
+  const pageMap = { home: 0, tasks: 1, settings: 3, profile: 4 };
+  const targetIndex = pageMap[pageKey] ?? 0;
+  const targetButton = listButtons[targetIndex] || listButtons[0];
+  if (targetButton) setActiveNav(targetButton);
+  switchPage();
+}
+
+function saveSettings() {
+  const liveThemeSelect = document.getElementById('themeSelect');
+  const liveNotificationsToggle = document.getElementById('notificationsToggle');
+  const liveDefaultPageSelect = document.getElementById('defaultPageSelect');
+
+  const selectedTheme = liveThemeSelect ? liveThemeSelect.value : 'light';
+  const notificationsEnabled = liveNotificationsToggle ? liveNotificationsToggle.checked : true;
+  const selectedDefaultPage = liveDefaultPageSelect ? liveDefaultPageSelect.value : 'home';
+
+  localStorage.setItem('taskflow_theme', selectedTheme);
+  localStorage.setItem('taskflow_notifications', notificationsEnabled ? 'true' : 'false');
+  localStorage.setItem('taskflow_default_page', selectedDefaultPage);
+  applyTheme(selectedTheme);
+  applySettings();
+  uploadChanges(true);
+  navigateToPage(selectedDefaultPage);
+}
+
+function bindSettingsPage() {
+  const liveSaveSettingsBtn = document.getElementById('saveSettingsBtn');
+  if (liveSaveSettingsBtn) {
+    liveSaveSettingsBtn.onclick = saveSettings;
+  }
+  applySettings();
+}
+
+function logoutUser() {
+  const settings = getStoredSettings();
+  localStorage.clear();
+  if (settings) {
+    localStorage.setItem('taskflow_theme', settings.theme);
+    localStorage.setItem('taskflow_notifications', settings.notifications);
+    localStorage.setItem('taskflow_default_page', settings.defaultPage);
+  }
+  location.reload();
+}
+
+function getDefaultPageKey() {
+  return getStoredSettings().defaultPage;
+}
+
 function switchPage() {
   const active = document.querySelector('.list.active') || listButtons[0];
   const idx = Array.from(listButtons).indexOf(active);
@@ -504,10 +688,20 @@ function switchPage() {
   }
   else if (idx === 3) {
     tasksDisplay.innerHTML = settingsPage.innerHTML;
+    bindSettingsPage();
+    applySettings();
   }
   else if (idx === 4) {
     tasksDisplay.innerHTML = profilePage.innerHTML;
-    name2.value = localStorage.getItem('taskflow_name');
+    const profileNameInput = document.getElementById('name2');
+    if (profileNameInput) {
+      profileNameInput.value = localStorage.getItem('taskflow_name') || '';
+    }
+    bindProfileNameEditor();
+    const profileLogoutButton = document.getElementById('logoutBtn');
+    if (profileLogoutButton) {
+      profileLogoutButton.onclick = logoutUser;
+    }
   }
   homepage()
 
@@ -543,14 +737,17 @@ if (form) {
     const dict = Object.fromEntries(data.entries());
     dict.Done = false;
     console.log(dict);
+
     TaskArray.push(dict);
-    localStorage.setItem('tasks', JSON.stringify(TaskArray));
+    persistTasksToStorage();
+    suppressNextFetch = true;
+
     form.reset();
     overlay.classList.remove('active');
     setActiveNav(listButtons[1] || null);
     switchPage();
-    uploadChanges();
-    location.reload(true);
+    homepage();
+    uploadChanges(true);
   });
 }
 
@@ -571,30 +768,37 @@ document.querySelectorAll('.avatar-options img').forEach(img => {
 });
 
 if (loginForm) {
-  
   loginForm.addEventListener('submit', e => {
     e.preventDefault();
-    
+
+    clearSavedAccountData();
+
     const name = document.getElementById('username').value;
     const phoneno = document.getElementById('phoneno').value;
     const fileInput = document.getElementById('pfpUpload');
     let pfp = avatarSelect ? avatarSelect.value : null;
+
+    const finishLogin = () => {
+      currentPhoneNo = phoneno;
+      saveProfile(name, pfp, phoneno);
+      uploadChanges(true);
+      startContinuousFetch(phoneno).then(() => {
+        console.log("Sheet data loaded after login");
+      }).catch(err => {
+        console.error("Failed to fetch data:", err);
+      });
+    };
+
     if (fileInput && fileInput.files.length > 0) {
       const reader = new FileReader();
-      reader.onload = ev => saveProfile(name, ev.target.result, phoneno);
+      reader.onload = ev => {
+        pfp = ev.target.result;
+        finishLogin();
+      };
       reader.readAsDataURL(fileInput.files[0]);
-    } else saveProfile(name, pfp, phoneno);
-    
-    // Fetch data and wait for completion before proceeding
-    fetchDataByPhone(phoneno).then(() => {
-      console.log("Data fetched and stored in localStorage");
-      currentPhoneNo = phoneno;
-      // Start continuous fetch after login
-      startContinuousFetch(phoneno);
-      refreshCurrentView();
-    }).catch(err => {
-      console.error("Failed to fetch data:", err);
-    });
+    } else {
+      finishLogin();
+    }
   });
 }
 
@@ -607,23 +811,64 @@ function saveProfile(name, pfp, phoneno) {
   homepage();
 }
 
+function updateProfileNameUI(name) {
+  const trimmedName = (name || '').trim();
+  const profileNameInput = document.getElementById('name2');
+
+  if (greetings_name) {
+    greetings_name.textContent = trimmedName ? `Hi ${trimmedName}` : 'Hi';
+  }
+
+  if (profileNameInput) {
+    profileNameInput.value = trimmedName;
+  }
+}
+
+function saveProfileName(newName) {
+  const trimmedName = (newName || '').trim();
+  if (!trimmedName) return;
+
+  localStorage.setItem('taskflow_name', trimmedName);
+  updateProfileNameUI(trimmedName);
+
+  if (currentPhoneNo) {
+    uploadChanges(true);
+  }
+}
+
+function bindProfileNameEditor() {
+  const profileNameInput = document.getElementById('name2');
+  const profileNameButton = document.getElementById('name_ok');
+
+  if (!profileNameInput || !profileNameButton) return;
+
+  profileNameButton.onclick = () => saveProfileName(profileNameInput.value);
+  profileNameInput.onkeydown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      saveProfileName(profileNameInput.value);
+    }
+  };
+}
+
+
 function displayProfile() {
   const n = localStorage.getItem('taskflow_name');
   const p = localStorage.getItem('taskflow_pfp');
-  if (n && greetings_name) {
-    greetings_name.textContent = `Hi ${n}`;
-  };
+
+  updateProfileNameUI(n);
+
   if (p && greetings_img) {
     greetings_img.src = p;
     greetings_img2.src = p
-  };
+  }
   homepage();
 }
 
 window.addEventListener('load', () => {
+  applySettings();
   displayProfile();
-  if (listButtons[0]) setActiveNav(listButtons[0]);
-  switchPage();
+  navigateToPage(getDefaultPageKey());
   homepage();
   progress.style.transition = 'all 0.5s ease-in-out';
 });
@@ -754,12 +999,16 @@ function showTaskDetails(task, index) {
       const noBtn = document.getElementById('cancelDelete');
       yesBtn.onclick = () => {
         TaskArray.splice(index, 1);
-        localStorage.setItem('tasks', JSON.stringify(TaskArray));
+        persistTasksToStorage();
         overlay5.classList.remove('active');
         renderTasks(); renderTasks1(); homepage();
         deletepopup.classList.remove('active');
-        uploadChanges();
-      location.reload(true);
+        uploadChanges(true).then(() => {
+          if (currentPhoneNo) {
+            suppressNextFetch = true;
+            startContinuousFetch(currentPhoneNo);
+          }
+        });
       }
       noBtn.onclick = () => deletepopup.classList.remove('active');
     });
@@ -767,11 +1016,15 @@ function showTaskDetails(task, index) {
   if (md) {
     md.addEventListener('click', () => {
       TaskArray[index].Done = true;
-      localStorage.setItem('tasks', JSON.stringify(TaskArray));
+      persistTasksToStorage();
       overlay5.classList.remove('active');
       renderTasks(); renderTasks1(); homepage();
-      uploadChanges();
-      location.reload(true);
+      uploadChanges(true).then(() => {
+        if (currentPhoneNo) {
+          suppressNextFetch = true;
+          startContinuousFetch(currentPhoneNo);
+        }
+      });
     });
   }
 }
@@ -798,12 +1051,9 @@ function update() {
   formtaskArray.value = JsonObject.taskArray;
 }
 
-// Initialize with existing data if user is logged in
-if (currentPhoneNo) {
-  fetchDataByPhone(currentPhoneNo).then(() => {
-    startContinuousFetch(currentPhoneNo);
-    refreshCurrentView();
-  }).catch(err => {
+// Initialize with existing data only if a profile is already stored locally
+if (currentPhoneNo && localStorage.getItem('taskflow_name')) {
+  startContinuousFetch(currentPhoneNo).catch(err => {
     console.error("Initial fetch failed:", err);
   });
 }

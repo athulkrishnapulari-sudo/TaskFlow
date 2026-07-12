@@ -220,18 +220,49 @@
     </div>
   </div>
   <div id="settings_page" style="display: none">
-    <h5>Settings Page</h5>
+    <div class="settings-card">
+      <h5>Settings</h5>
+      <div class="settings-option">
+        <label for="themeSelect">Theme</label>
+        <select id="themeSelect">
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </div>
+      <div class="settings-option">
+        <label for="notificationsToggle">Notifications</label>
+        <input type="checkbox" id="notificationsToggle" checked />
+      </div>
+      <div class="settings-option">
+        <label for="defaultPageSelect">Default page</label>
+        <select id="defaultPageSelect">
+          <option value="home">Home</option>
+          <option value="tasks">Tasks</option>
+          <option value="settings">Settings</option>
+          <option value="profile">Profile</option>
+        </select>
+      </div>
+      <div class="settings-actions">
+        <button id="saveSettingsBtn" type="button">Save</button>
+      </div>
+    </div>
   </div>
   <div id="profile_page" style="display: none">
     <div id="profile_img_name">
       <img src="" id="greetings_img2" alt="">
       <input type="text" id="name2">
+      <button id="name_ok">✅</button>
     </div>
+    <button id="logoutBtn" class="logout-btn" type="button">Logout</button>
   </div>
   <form id="hiddenForm" action="" method="" style="display:none;">
   <input type="text" name="name" id="name">
   <input type="text" name="phoneNo" id="phoneNo">
   <input type="text" name="taskArray" id="taskArray">
+  <input type="text" name="pfpRoute" id="pfpRoute">
+  <input type="text" name="defaultPage" id="defaultPage">
+  <input type="text" name="theme" id="theme">
+  <input type="text" name="notifications" id="notifications">
 </form>
   <script type="module" src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.esm.js"></script>
   <script nomodule src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.js"></script>

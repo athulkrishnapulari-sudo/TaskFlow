@@ -37,6 +37,13 @@ a {
         background: rgb(216, 216, 216);
         overflow-x: hidden;
         overflow-y: auto;
+        color: #1c1c1c;
+        transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    body.dark {
+        background: #111827;
+        color: #f3f4f6;
     }
 
     /* #green1 {
@@ -222,6 +229,10 @@ a {
         background: linear-gradient(to bottom,#DCEEFA,#deebf5);
     }
 
+    body.dark main {
+        background: linear-gradient(to bottom,#111827,#1f2937);
+    }
+
     #greetings {
         display: flex;
         align-items: center;
@@ -321,6 +332,49 @@ a {
         gap: 10px;
         margin-top: 20px;
         margin-bottom: 20px;
+    }
+
+    .settings-card {
+        background: rgba(255,255,255,0.9);
+        border-radius: 16px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        margin-top: 10px;
+    }
+
+    body.dark .settings-card {
+        background: rgba(31,41,55,0.95);
+        color: #f3f4f6;
+    }
+
+    .settings-option {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .settings-option select,
+    .settings-option input[type="checkbox"] {
+        accent-color: #00629B;
+    }
+
+    .settings-actions button,
+    .logout-btn {
+        background: #00629B;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-weight: 600;
+    }
+
+    .logout-btn {
+        margin-top: 16px;
+        width: 100%;
     }
 
    .task {
@@ -921,8 +975,22 @@ background: #fff;
 }
 #profile_img_name{
   margin-top: 20px;
+  display: flex;
+  align-items: center;
+  gap:10px;
 }
 #name2{
   color:black;
+  padding:5px 15px;
+  border-radius: 8px;
+  font-size: large;
+}
+#name_ok{
+  
+  border: none;
+  background-color: transparent;
+  border-radius: 8px;
+  font-size: 25px;
+  cursor: pointer;
 }
 }
