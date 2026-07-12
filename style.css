@@ -978,6 +978,7 @@ background: #fff;
   display: flex;
   align-items: center;
   gap:10px;
+  max-width: 100%;
 }
 #name2{
   color:black;

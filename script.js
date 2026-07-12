@@ -781,8 +781,10 @@ if (loginForm) {
     const finishLogin = () => {
       currentPhoneNo = phoneno;
       saveProfile(name, pfp, phoneno);
-      uploadChanges(true);
-      startContinuousFetch(phoneno).then(() => {
+      startContinuousFetch(phoneno).then((result) => {
+        if (result) {
+          uploadChanges(true);
+        }
         console.log("Sheet data loaded after login");
       }).catch(err => {
         console.error("Failed to fetch data:", err);
